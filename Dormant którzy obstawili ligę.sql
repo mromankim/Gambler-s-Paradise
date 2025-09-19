@@ -1,12 +1,14 @@
--- Dormant którzy obstawili kiedykolwiek
+-- Dormant users who ever placed a bet on Polish League II, II or IV
+-- Used for Sopersocial, Marcin Bratkowski
+
 with players as (
 select
-player_id,
-has_marketing_consent,
+    player_id,
+    has_marketing_consent,
 from PROD.DWH.D_PLAYER_MARKETING_PROPERTY
 where business_domain_id = 3 
-and current_timestamp()  between valid_from_dt and valid_to_dt
-and has_marketing_consent = 1
+    and current_timestamp()  between valid_from_dt and valid_to_dt
+    and has_marketing_consent = 1
 ),
 
 details as (
@@ -24,10 +26,10 @@ where business_market_id = 3
 
 fin as (
 select
-gg.player_id,
-username,
-email,
-count(distinct ticket_code) as tickets
+    gg.player_id,
+    username,
+    email,
+    count(distinct ticket_code) as tickets
 from (
     select
         ff.player_id,
@@ -36,10 +38,9 @@ from (
     left join PROD.DWH.D_TOURNAMENT tt
         on ff.tournament_id = tt.tournament_id
     where BUSINESS_DOMAIN_ID = 3
-    --and accepted_dt::date >= '2025-01-01'
-    and tournament_name like '%Poland - Liga IV%'
-    or tournament_name like '%Poland - III Liga%'
-    or tournament_name like '%Poland - II Liga%'
+        and tournament_name like '%Poland - Liga IV%'
+        or tournament_name like '%Poland - III Liga%'
+        or tournament_name like '%Poland - II Liga%'
     group by all
 ) gg
 left join details
@@ -62,8 +63,8 @@ group by 1
 )
 
 select
-cc.*,
-vv.last_active_day,
+    cc.*,
+    vv.last_active_day,
 case when last_activity_was_days_ago > 31 and last_activity_was_days_ago <= 90 Then 'Churn'
     when last_activity_was_days_ago > 90 and last_activity_was_days_ago <= 364 Then 'Dormant'
     when last_activity_was_days_ago is null then 'No activity'
